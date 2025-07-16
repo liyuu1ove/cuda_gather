@@ -11,4 +11,4 @@ clean:
 	rm -rf build
 
 test:
-	python3 test/gather.py --device cuda
+	python3 test/attention.py --device cuda

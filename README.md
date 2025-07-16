@@ -1,5 +1,11 @@
-# 2024 冬季 CUDA 作业
+# CUDA 算子框架
+本框架fork自肖老师的框架 https://github.com/xgqdut2016/hpc2torch 
 
+使用了pybind进行python对c的调用
+
+主要使用cuda进行开发
+
+## gather
 参照 [ONNX 的 Gather 算子文档](https://github.com/onnx/onnx/blob/main/docs/Operators.md#Gather)实现一个 CUDA kernel。该 kernel 需要接收三个输入参数：`data`、`indices` 和 `axis`，并输出 `output`。`axis` 的值缺省为 0。在开始实现之前，建议先访问 cuDNN 的官方网站，查询是否有现成的库函数可用于实现 Gather 操作；如果存在现成的库函数，可以同时添加库函数以及手写 cuda 算子的实现作为对比。
 
 1. fork 本仓库；
@@ -35,28 +41,3 @@
   make test
   ```
 
-## 情况说明
-
-根基实测，天数上可以达到下图所示的性能。由于天数服务器使用虚拟硬件，计时不稳定，需要多试几次才能找到一个 make sense 的数据。
-
-```plaintext
-Timestamp    Wed Jan 15 15:31:31 2025
-+-----------------------------------------------------------------------------+
-|  IX-ML: 3.2.1       Driver Version: 3.2.1       CUDA Version: 10.2          |
-|-------------------------------+----------------------+----------------------|
-| GPU  Name                     | Bus-Id               | Clock-SM  Clock-Mem  |
-| Fan  Temp  Perf  Pwr:Usage/Cap|      Memory-Usage    | GPU-Util  Compute M. |
-|===============================+======================+======================|
-| 0    Iluvatar BI-V100         | 00000000:0C:00.0     | 1500MHz   1200MHz    |
-| 0%   33C   P0    58W / 250W   | 0MiB / 16384MiB      | 0%        Default    |
-+-------------------------------+----------------------+----------------------+
-
-+-----------------------------------------------------------------------------+
-| Processes:                                                       GPU Memory |
-|  GPU        PID      Process name                                Usage(MiB) |
-|=============================================================================|
-|  No running processes found                                                 |
-+-----------------------------------------------------------------------------+
-```
-
-![img_v3_02ii_da67acf7-06c5-4e81-aab1-733ff0f1025g](https://github.com/user-attachments/assets/cbb67baf-cae7-4a33-910c-070307f6a268)

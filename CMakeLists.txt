@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.18)
 
 project(MyCUDAProject)
 
@@ -42,11 +42,16 @@ if(USE_CUDA)
     enable_language(CUDA)
     list(APPEND ALL_SOURCE_FILES ${CUDA_SOURCE_FILES} ${CPP_SOURCE_FILES})
     add_library(my_library SHARED ${ALL_SOURCE_FILES})# 创建库或可执行文件
-    set_target_properties(my_library PROPERTIES
-        CUDA_ARCHITECTURES 80
-    )
-    target_link_libraries(my_library cudnn cublas)#如果调用cudnn库需要链接cudnn, cublas
 
+
+    set(CMAKE_CUDA_ARCHITECTURES 70)
+    set_target_properties(my_library PROPERTIES
+        CUDA_ARCHITECTURES 70
+    )
+    find_package(CUDAToolkit REQUIRED)
+    set(CUDNN_INCLUDE_DIR=/usr/local/cuda/include)
+    target_link_libraries(my_library CUDA::cudart CUDA::cublas)#如果调用cudnn库需要链接cudnn, cublas
+    target_link_libraries(my_library cudnn)
 elseif(USE_BANG)
     message(STATUS "BANG build enabled.")
     
