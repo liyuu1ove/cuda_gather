@@ -16,7 +16,7 @@ lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.././build/
 lib = ctypes.CDLL(lib_path)
 def test(M, K, N, test_dtype, device):
     print(
-        f"Testing Attention on {device} with M-K-N:{M, K, N} , dtype:{test_dtype}"
+        f"Testing matmul on {device} with M-K-N:{M, K, N} , dtype:{test_dtype}"
     )
     A = torch.randn([M, K], device=device, dtype=torch.float32, requires_grad=False) 
     B = torch.randn([K, N], device=device, dtype=torch.float32, requires_grad=False)
@@ -29,7 +29,7 @@ def test(M, K, N, test_dtype, device):
     if device == "cuda":
         torch_matmul_time = performance.CudaProfile((torch.matmul, (A, B)))
         
-        lib.matmul_cuda_f32.argtypes = [
+        lib.matmul_cuda_fp32.argtypes = [
         ctypes.POINTER(ctypes.c_void_p),
         ctypes.POINTER(ctypes.c_void_p),
         ctypes.POINTER(ctypes.c_void_p),
@@ -38,7 +38,7 @@ def test(M, K, N, test_dtype, device):
         ctypes.c_int
         ]
         custom_matmul_time = performance.CudaProfile((
-            lib.matmul_cuda_f32,
+            lib.matmul_cuda_fp32,
             (A_ptr, B_ptr, C_ptr, M, K, N)
         ))
         '''

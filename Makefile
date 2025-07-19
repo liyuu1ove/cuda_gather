@@ -1,6 +1,7 @@
 ﻿.PHONY : build clean test
 
 TYPE ?= Release
+KERNEL ?= attention
 
 build:
 	mkdir -p build
@@ -11,4 +12,4 @@ clean:
 	rm -rf build
 
 test:
-	python3 test/attention.py --device cuda
+	python3 test/$(KERNEL).py --device cuda

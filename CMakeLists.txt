@@ -50,7 +50,7 @@ if(USE_CUDA)
     )
     find_package(CUDAToolkit REQUIRED)
     set(CUDNN_INCLUDE_DIR=/usr/local/cuda/include)
-    target_link_libraries(my_library CUDA::cudart CUDA::cublas)#如果调用cudnn库需要链接cudnn, cublas
+    target_link_libraries(my_library CUDA::cudart CUDA::cublas)
     target_link_libraries(my_library cudnn)
 elseif(USE_BANG)
     message(STATUS "BANG build enabled.")
