@@ -41,8 +41,8 @@ def test(M, K, N, test_dtype, device):
             lib.matmul_cuda_fp32,
             (A_ptr, B_ptr, C_ptr, M, K, N)
         ))
-        '''
-        lib.matmul_cudnn_f32.argtypes = [
+        
+        lib.matmul_cudnn_fp32.argtypes = [
         ctypes.POINTER(ctypes.c_void_p),
         ctypes.POINTER(ctypes.c_void_p),
         ctypes.POINTER(ctypes.c_void_p),
@@ -50,14 +50,14 @@ def test(M, K, N, test_dtype, device):
         ctypes.c_int,
         ctypes.c_int
         ]
-        custom_matmul_time = performance.CudaProfile((
-            lib.matmul_cudnn_f32,
-            (A_ptr, B_ptr, C_ptr, M, K, N)
-        ))
-        '''
+        # custom_matmul_time = performance.CudaProfile((
+        #     lib.matmul_cudnn_fp32,
+        #     (A_ptr, B_ptr, C_ptr, M, K, N)
+        # ))
         
         
-    performance.logBenchmark(torch_matmul_time, custom_matmul_time)
+    GFLOPS=2*M*N*K/1e+9
+    performance.logBenchmark(torch_matmul_time, custom_matmul_time,GFLOPS)
     tmpa = torch.matmul(A, B).to('cpu').numpy().flatten()
     tmpb = C.to('cpu').numpy().flatten()
     atol = max(abs(tmpa - tmpb))

@@ -30,21 +30,27 @@ def CpuProfile(*function_with_args):
     
     elapsed_time = time.time() - start  # 以毫秒为单位        
     return 1000 * elapsed_time/times
-def BangProfile(*function_with_args):
-    times = 20
-    for _ in range(times):
-        for func, args in function_with_args:
-            func(*args)
-    start = time.time()
-    for _ in range(times):
-        for func, args in function_with_args:
-            func(*args)
     
-    elapsed_time = time.time() - start  # 以毫秒为单位        
-    return 1000 * elapsed_time/times
-def logBenchmark(baseline, time):
+def logBenchmark(baseline, time,total_GFLOPS):
+    unitlist=[" GFOLPs "," TFLOPS "]
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
-    msg = "Pytorch: " + str(baseline) + " ms, kernel: " + str(time) + " ms "
+    msg = "Pytorch: " + "{:.3f}".format(baseline) + " ms, "
+
+    GFLOPs_Pytorch=total_GFLOPS/baseline*1000
+    if(GFLOPs_Pytorch>1000):
+        GFLOPs_Pytorch/=1000
+        msg+="{:.3f}".format(GFLOPs_Pytorch)+unitlist[1]
+    else:
+        msg+="{:.3f}".format(GFLOPs_Pytorch)+unitlist[0]
+    msg+="kernel: " + "{:.3f}".format(time) + " ms "
+    
+    GFLOPs_kernel=total_GFLOPS/time*1000
+    if(GFLOPs_kernel>1000):
+        GFLOPs_kernel/=1000
+        msg+="{:.3f}".format(GFLOPs_kernel)+unitlist[1]
+    else:
+        msg+="{:.3f}".format(GFLOPs_kernel)+unitlist[0]
+
     percentage = "{:.2f}%".format(abs(baseline - time)/baseline * 100)
     if baseline >= time:
         logging.info(msg + "\033[32m" + "[-" + percentage + "]" +"\033[0m")

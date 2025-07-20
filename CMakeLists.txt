@@ -46,7 +46,7 @@ if(USE_CUDA)
 
     set(CMAKE_CUDA_ARCHITECTURES 70)
     set_target_properties(my_library PROPERTIES
-        CUDA_ARCHITECTURES 70
+        CUDA_ARCHITECTURES 89
     )
     find_package(CUDAToolkit REQUIRED)
     set(CUDNN_INCLUDE_DIR=/usr/local/cuda/include)
