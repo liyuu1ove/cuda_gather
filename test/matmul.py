@@ -64,7 +64,10 @@ def test(M, K, N, test_dtype, device):
 
     rtol = atol / max(abs(tmpb) + 1e-8)
 
-
+    if atol>1e-03:
+        print("validation failed")
+    else:
+        print("validation passed")
     print("absolute error:%.4e"%(atol))
     print("relative error:%.4e"%(rtol))
 # 解析命令行参数
