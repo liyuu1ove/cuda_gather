@@ -16,7 +16,7 @@ lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.././build/
 lib = ctypes.CDLL(lib_path)
 def test(M, K, N, test_dtype, device):
     print(
-        f"Testing matmul on {device} with M-K-N:{M, K, N} , dtype:{test_dtype}"
+        f"\nTesting matmul on {device} with M-K-N:{M, K, N} , dtype:{test_dtype}"
     )
     A = torch.randn([M, K], device=device, dtype=torch.float32, requires_grad=False) 
     B = torch.randn([K, N], device=device, dtype=torch.float32, requires_grad=False)
@@ -60,16 +60,7 @@ def test(M, K, N, test_dtype, device):
     performance.logBenchmark(torch_matmul_time, custom_matmul_time,GFLOPS)
     tmpa = torch.matmul(A, B).to('cpu').numpy().flatten()
     tmpb = C.to('cpu').numpy().flatten()
-    atol = max(abs(tmpa - tmpb))
-
-    rtol = atol / max(abs(tmpb) + 1e-8)
-
-    if atol>1e-03:
-        print("validation failed")
-    else:
-        print("validation passed")
-    print("absolute error:%.4e"%(atol))
-    print("relative error:%.4e"%(rtol))
+    performance.logValidation(tmpa,tmpb)
 # 解析命令行参数
 parser = argparse.ArgumentParser(description="Test softmax on different devices.")
 parser.add_argument('--device', choices=['cpu', 'cuda'], required=True, help="Device to run the tests on.")

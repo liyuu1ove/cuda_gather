@@ -30,11 +30,24 @@ def CpuProfile(*function_with_args):
     
     elapsed_time = time.time() - start  # 以毫秒为单位        
     return 1000 * elapsed_time/times
-    
+def logValidation(torch,kernel):
+    atol = max(abs(torch - kernel))
+
+    rtol = atol / max(abs(kernel) + 1e-8)
+
+    if atol>1e-03:
+        print("\033[31m"+"validation failed!"+"\033[0m")
+    else:
+        print("\033[32m"+"validation passed!"+"\033[0m")
+    print("absolute error:%.3e"%(atol))
+    print("relative error:%.3e"%(rtol))
+
+
 def logBenchmark(baseline, time,total_GFLOPS):
-    unitlist=[" GFOLPs "," TFLOPS "]
+    unitlist=[" GFOLPs "," TFLOPs "]
+    print("Time:")
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
-    msg = "Pytorch: " + "{:.3f}".format(baseline) + " ms, "
+    msg = "\n"+"Pytorch: " + "{:.3f}".format(baseline) + " ms "
 
     GFLOPs_Pytorch=total_GFLOPS/baseline*1000
     if(GFLOPs_Pytorch>1000):
@@ -42,7 +55,7 @@ def logBenchmark(baseline, time,total_GFLOPS):
         msg+="{:.3f}".format(GFLOPs_Pytorch)+unitlist[1]
     else:
         msg+="{:.3f}".format(GFLOPs_Pytorch)+unitlist[0]
-    msg+="kernel: " + "{:.3f}".format(time) + " ms "
+    msg+="\nkernel: " + "{:.3f}".format(time) + " ms "
     
     GFLOPs_kernel=total_GFLOPS/time*1000
     if(GFLOPs_kernel>1000):
