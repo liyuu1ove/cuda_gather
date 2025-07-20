@@ -27,6 +27,7 @@ __global__ void matmul_kernel_fp32(
         device_C[x * N + y] = tmp;
     }
 }
+//__global__ void matmul_tensor_
 extern "C" void matmul_cudnn_fp32(void *const host_A,
                                   void *const host_B,
                                   void *const host_C,

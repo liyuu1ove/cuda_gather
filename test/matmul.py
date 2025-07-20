@@ -4,7 +4,6 @@ import torch.nn.functional as F
 import argparse
 
 import performance
-# 添加上一层目录到模块搜索路径
 import sys
 import os
 
@@ -72,6 +71,7 @@ test_cases = [
         (1024, 256, 1024, torch.float32, 'cuda'),
         (1024, 512, 1024, torch.float32, 'cuda'),
         (1024, 1024, 1024, torch.float32, 'cuda'),
+        (4096, 4096, 4096, torch.float32, 'cuda'),
 ]
 filtered_test_cases = [
     (M, K, N, test_dtype, device)
