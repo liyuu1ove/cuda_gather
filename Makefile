@@ -13,10 +13,12 @@ clean:
 	rm -f info
 
 test:
-	python3 test/$(KERNEL).py --device cuda
-
+	@mkdir -p test_log
+	@echo `date` >> test_log/`date`_$(KERNEL).log
+	python3 test/$(KERNEL).py --device cuda >> test_log/`date`_$(KERNEL).log
 info:
 	@nvcc src/cuda_info/gpu/info.cu -o info
 	@./info > info.txt
 	@cat info.txt
+
 

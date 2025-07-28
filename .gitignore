@@ -1,4 +1,5 @@
-﻿/build
-/test/__pycache__
+﻿build
+test/__pycache__
 info
 info.txt
+test_log

@@ -33,20 +33,22 @@ def CpuProfile(*function_with_args):
 def logValidation(torch,kernel):
     atol = max(abs(torch - kernel))
 
-    rtol = atol / max(abs(kernel) + 1e-8)
-
+    rtol = atol / max(abs(kernel) + 1e-8) * 100
+    msg=""
     if atol>1e-03:
-        print("\033[31m"+"validation failed!"+"\033[0m")
+        msg+="\033[31m"+"validation failed!"+"\033[0m"
     else:
-        print("\033[32m"+"validation passed!"+"\033[0m")
-    print("absolute error:%.3e"%(atol))
-    print("relative error:%.3e"%(rtol))
+        msg+="\033[32m"+"validation passed!"+"\033[0m"
+    atol_string="{:.2e}".format(atol)
+    rtol_string="{:.2f}%".format(rtol)
+    msg+="\n"+"absolute error:"+atol_string+"\n"
+    msg+="relative error:"+rtol_string+"\n"
+
+    print(msg)
 
 
 def logBenchmark(baseline, time,total_GFLOPS):
     unitlist=[" GFOLPs "," TFLOPs "]
-    print("Time:")
-    logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
     msg = "\n"+"Pytorch: " + "{:.3f}".format(baseline) + " ms "
 
     GFLOPs_Pytorch=total_GFLOPS/baseline*1000
@@ -66,6 +68,6 @@ def logBenchmark(baseline, time,total_GFLOPS):
 
     percentage = "{:.2f}%".format(abs(baseline - time)/baseline * 100)
     if baseline >= time:
-        logging.info(msg + "\033[32m" + "[-" + percentage + "]" +"\033[0m")
+        print(msg + "\033[32m" + "[-" + percentage + "]" +"\033[0m")
     else:
-        logging.info(msg + "\033[31m" + "[+" + percentage + "]" +"\033[0m")
+        print(msg + "\033[31m" + "[+" + percentage + "]" +"\033[0m")

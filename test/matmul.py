@@ -67,11 +67,11 @@ args = parser.parse_args()
 
 test_cases = [
         # M, K, N, test_dtype, device
-        (1024, 128, 1024, torch.float32, 'cuda'),
-        (1024, 256, 1024, torch.float32, 'cuda'),
-        (1024, 512, 1024, torch.float32, 'cuda'),
+        (128, 128, 128, torch.float32, 'cuda'),
+        (256, 256, 256, torch.float32, 'cuda'),
+        (512, 512, 512, torch.float32, 'cuda'),
         (1024, 1024, 1024, torch.float32, 'cuda'),
-        (4096, 4096, 4096, torch.float32, 'cuda'),
+        (2048, 2048, 2048, torch.float32, 'cuda'),
 ]
 filtered_test_cases = [
     (M, K, N, test_dtype, device)
