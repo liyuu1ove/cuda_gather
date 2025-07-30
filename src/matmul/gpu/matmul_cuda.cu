@@ -5,43 +5,67 @@
 #include <cublas_v2.h>
 #include "error_check.h"
 
+#define CEIL_DIV(M, N) (((M) + (N) - 1) / (N))
 
-#define CEIL_DIV(M, N) (((M) + (N)-1) / (N))
-
-
-static const int block_size = 32;
-template <int BLOCKSIZE>
+template <const int BM, const int BN, const int BK, const int TM, const int TN>
+// a thread compute TM*TN elements of C
+// and a block compute BM*BN elements of C
+// SMEM loads BM*BK + BK*BN elements then compute
+// register hold TM*1 and 1*TN elements to compute a part of every element in TM*TN
 __global__ void matmul_kernel_fp32(
     const float *device_A,
     const float *device_B,
     float *device_C,
-    int M, int K, int N)// A: M*K B: K*N C: M*N
-{            
-    int col_C = blockIdx.x*blockDim.x; //index of C element to compute
-    int row_C = blockIdx.y*blockDim.y;
-    
-    int start_A = K*row_C; //index of startpoint in A in a block
-    int start_B = col_C; //index of startpoint in B in a block
-    int index_A = start_A+threadIdx.x+threadIdx.y*K;
-    int index_B = start_B+threadIdx.x+threadIdx.y*N;
-    
-    __shared__ float shared_A[BLOCKSIZE*BLOCKSIZE];
-    __shared__ float shared_B[BLOCKSIZE*BLOCKSIZE];
-    float tmp=0;
-    
-    for(int idx_K =0 ;idx_K<K;idx_K+=BLOCKSIZE){
-        int tid=threadIdx.x+threadIdx.y*BLOCKSIZE;//tid of the block
-        shared_A[tid]=device_A[index_A];
-        shared_B[tid]=device_B[index_B];
+    int M, int K, int N) // A: M*K B: K*N C: M*N
+{
+    int col_C = (blockIdx.x * blockDim.x + threadIdx.x) * TN; // start index of C element to compute
+    int row_C = (blockIdx.y * blockDim.y + threadIdx.y) * TM;
+    int start_idx_A = blockIdx.y * blockDim.y * TM*K;
+    int start_idx_B = blockIdx.x * TN * blockDim.x;
+    __shared__ float shared_A[BM * BK];
+    __shared__ float shared_B[BK * BN];
+    int tid = threadIdx.x + threadIdx.y * blockDim.x; // tid in the block
+    int col_shared_A = tid % BK;
+    int row_shared_A = tid / BK;
+    int col_shared_B = tid % BN;
+    int row_shared_B = tid / BN;
+    float tmp[TN * TM] = {0};
+
+    for (int idx_K = 0; idx_K < K; idx_K += BK)
+    {
+        for (int i = 0; i < BM; i += (blockDim.y * blockDim.x / BK)) // BM=TM*blockDim.y load shared_A
+        {
+            shared_A[col_shared_A + (row_shared_A + i) * BK] = device_A[start_idx_A + col_shared_A + (row_shared_A + i) * K];
+        }
+        for (int i = 0; i < BK; i += (blockDim.y * blockDim.x / BN)) // BM=TM*blockDim.y load shared_A
+        {
+            shared_B[col_shared_B + (row_shared_B + i) * BN] = device_B[start_idx_B + col_shared_B + (row_shared_B + i) * N];
+        }
+
         __syncthreads();
-        for(int i =0 ;i<BLOCKSIZE;i++){
-            tmp+=shared_A[threadIdx.y*BLOCKSIZE+i]*shared_B[threadIdx.x+i*BLOCKSIZE];
+        for (int i = 0; i < BK; i++)
+        {
+            for (int k = 0; k < TM; k++)
+            {
+                for (int j = 0; j < TN; j++)
+                {
+
+                    tmp[j + k * TN] += shared_A[(threadIdx.y * TM + k) * BK + i] * shared_B[threadIdx.x * TN + j + i * BN];
+                }
+            }
         }
         __syncthreads();
-        index_A+=BLOCKSIZE;
-        index_B+=BLOCKSIZE*N;
+        start_idx_A += BK;
+        start_idx_B += BK * N;
     }
-    device_C[col_C+threadIdx.x+(row_C+threadIdx.y)*N]=tmp;
+    for (int k = 0; k < TM; k++)
+    {
+        for (int j = 0; j < TN; j++)
+        {
+
+            device_C[col_C + j + (row_C + k) * N] = tmp[j + k * TN];
+        }
+    }
 }
 //__global__ void matmul_tensorcore_
 extern "C" void matmul_cudnn_fp32(void *const host_A,
@@ -61,12 +85,18 @@ extern "C" void matmul_cuda_fp32(void *const host_A,
                                  void *const host_C,
                                  const int M, const int K, const int N)
 {
-    int num_block_y = CEIL_DIV(M, block_size);
-    int num_block_x = CEIL_DIV(N, block_size);
+    const int BM = 64;
+    const int BN = 64;
+    const int BK = 16;
+    const int TN = 8;
+    const int TM = 8;
+
+    int num_block_y = CEIL_DIV(M, BM);
+    int num_block_x = CEIL_DIV(N, BN);
     dim3 grid_dim(num_block_x, num_block_y);
-    dim3 block_dim(block_size, block_size);
-    matmul_kernel_fp32<block_size><<<grid_dim, block_dim>>>((float *)host_A,
-                                                            (float *)host_B,
-                                                            (float *)host_C,
-                                                            M, K, N);
+    dim3 block_dim(CEIL_DIV(BN, TN), CEIL_DIV(BM, TM));
+    matmul_kernel_fp32<BM, BN, BK, TM, TN><<<grid_dim, block_dim>>>((float *)host_A,
+                                                                    (float *)host_B,
+                                                                    (float *)host_C,
+                                                                    M, K, N);
 }

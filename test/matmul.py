@@ -72,6 +72,7 @@ test_cases = [
         (512, 512, 512, torch.float32, 'cuda'),
         (1024, 1024, 1024, torch.float32, 'cuda'),
         (2048, 2048, 2048, torch.float32, 'cuda'),
+        (4096, 4096, 4096, torch.float32, 'cuda')
 ]
 filtered_test_cases = [
     (M, K, N, test_dtype, device)

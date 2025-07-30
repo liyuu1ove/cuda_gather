@@ -1,7 +1,7 @@
 ﻿.PHONY : build clean test
 
 TYPE ?= Release
-KERNEL ?= attention
+KERNEL ?= matmul
 
 build:
 	mkdir -p build
